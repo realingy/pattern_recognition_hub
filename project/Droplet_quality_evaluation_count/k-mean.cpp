@@ -473,11 +473,12 @@ int main()
 	KMeansImage kms(k);
 	kms.loadImage(gray);
 	kms.generatCentroids(); // 生成K个中心点
-	kms.kmeans();
-	cv::Mat res = kms.update_result();
+	kms.kmeans(gray);
+	//cv::Mat res = kms.update_result();
+	kms.update_result();
 
-	cv::namedWindow("Result Image", CV_WINDOW_NORMAL);
-	cv::imshow("Result Image", res);
+	//cv::namedWindow("Result Image", CV_WINDOW_NORMAL);
+	//cv::imshow("Result Image", res);
 
 }
 #endif

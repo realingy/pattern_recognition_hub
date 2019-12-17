@@ -95,7 +95,7 @@ private:
 		for (int i = 0; i < row_; i++)
 		{
 			temp.clear();
-			for (int j = 0; j < row_; j++)
+			for (int j = 0; j < col_; j++)
 			{
 				temp.push_back(node);
 			}
@@ -139,23 +139,37 @@ public:
 	}
 		
 	// 计算结果
-	cv::Mat update_result()
+	//cv::Mat update_result()
+	void update_result()
 	{
-		cv::Mat result = cv::Mat(cv::Size(row_, col_), CV_32FC1);
-
-		for (int i = 0; i < row_; i++)
+		//cv::Mat result = cv::Mat(cv::Size(row_, col_), CV_32FC1);
+		//cv::Mat result;
+		for (int i = 0; i < 10; i++)
 		{
-			for (int j = 0; j < row_; j++)
+			for (int j = 0; j < 10; j++)
 			{
 				int idx = clusterAssment[i][j].minIndex; // 类别
-				result.at<float>(i, j) = centroids[idx];
+				cout << centroids[idx] << "\t";
+			}
+		}
+
+		/*
+		for (int i = 0; i < row_; i++)
+		{
+			for (int j = 0; j < col_; j++)
+			{
+				int idx = clusterAssment[i][j].minIndex; // 类别
+				// result.at<float>(i, j) = centroids[idx];
+				// result.at<uchar>(i, j) = (uchar)centroids[idx];
+				cout << centroids[idx];
 			}
 		}
 
 		return result;
+		*/
 	}
 
-	void kmeans() {
+	void kmeans(cv::Mat & src) {
 		// kmeans的核心函数，计算k个中心点以及每个点的归类
 	
 		// 初始化clusterAssment的值，每个元素为一个结构体，一个域值为聚类的索引值；一个域值为存储误差
@@ -183,8 +197,8 @@ public:
 					// 计算第向量距离所有聚类中心centroids的距离
 					for (int cent = 0; cent < K_; cent++)
 					{
-						//float dist = distEclud(centroids[cent], src.at<float>(i, j));
-						float dist = distEclud(centroids[cent], data_[i][j]);
+						float dist = distEclud(centroids[cent], (float)src.at<uchar>(i, j));
+						//float dist = distEclud(centroids[cent], data_[i][j]);
 						if (dist < minDist)
 						{
 							minDist = dist;
@@ -205,7 +219,8 @@ public:
 			// step two : update the centroids
 			// 第二步、将同一类的像素灰度值相加并且求平均然后更新聚类中心点centroids的值
 			cout << "update the centroids:" << endl;
-			vector<float> total;
+			//vector<float> total(K_, 0.0);
+			float * total = new float[K_];
 			for (int cent = 0; cent < K_; cent++)
 			{
 				int cnt = 0;
@@ -217,8 +232,8 @@ public:
 						if (clusterAssment[i][j].minIndex == cent)
 						{
 							++cnt;
-							//total[cent] += src.at<float>(i, j);// 0/*灰度值*/;
-							total[cent] += data_[i][j];// 0/*灰度值*/;
+							total[cent] += (float)src.at<uchar>(i, j);// 0/*灰度值*/;
+							// total[cent] += data_[i][j];// 0/*灰度值*/;
 						}
 					}
 				}
@@ -228,6 +243,8 @@ public:
 					total[cent] /= cnt;
 				centroids[cent] = total[cent];
 			}
+
+			delete [] total;
 		
 			// update_result();
 		}
