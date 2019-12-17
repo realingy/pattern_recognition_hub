@@ -304,6 +304,12 @@ typename KMEANS<T>::tMinMax KMEANS<T>::getMinMax(int idx)
 }
 
 template<typename T>
+void KMEANS<T>::generatCentImage()
+{
+
+}
+
+template<typename T>
 void KMEANS<T>::randCent()
 {
 	//init centroids
@@ -392,16 +398,15 @@ void KMEANS<T>::print()
 template<typename T>
 void KMEANS<T>::loadImage(cv::Mat& src)
 {
-
-	colLen = src.cols;
-	rowLen = src.rows;
+	int cols = src.cols;
+	int rows = src.rows;
 
 	vector<T> temp;
-	for (size_t i = 0; i < rowLen; i++)
+	for (size_t i = 0; i < rows; i++)
 	{
 		uchar* data = gray.ptr<uchar>(i);
 		temp.clear();
-		for (size_t j = 0; j < colLen; j++)
+		for (size_t j = 0; j < cols; j++)
 		{
 			temp.push_back(data[j]);
 		}
@@ -409,7 +414,6 @@ void KMEANS<T>::loadImage(cv::Mat& src)
 	}
 
 	cout << "data leaded\n";
-
 }
 
 template<typename T>
@@ -438,26 +442,42 @@ void KMEANS<T>::loadDataSet(char* filename)
 	rowLen = dataSet.size();
 }
 
+#if 0
 int main()
 {
 	char *filename = "data.txt";
 
-	/*
+	int k = 2;
+	KMEANS<double> kms(k);
+	kms.loadDataSet(filename);
+	kms.randCent();
+	kms.kmeans();
+
+	return 0;
+}
+#else
+int main()
+{
 	cv::Mat src = cv::imread("DSC00128.JPG");
 	if (!src.data)
 		return -1;
 
 	cv::Mat gray;
 	cv::cvtColor(src, gray, CV_RGB2GRAY);
-	*/
 
+	cv::namedWindow("Source Image", CV_WINDOW_NORMAL);
+	cv::imshow("Source Image", gray);
+
+	// kmean聚类图像分割
 	int k = 2;
-	KMEANS<double> kms(k);
-	kms.loadDataSet(filename);
-	//kms.loadImage(gray);
-	kms.randCent();
+	KMeansImage kms(k);
+	kms.loadImage(gray);
+	kms.generatCentroids(); // 生成K个中心点
 	kms.kmeans();
+	cv::Mat res = kms.update_result();
 
-	return 0;
+	cv::namedWindow("Result Image", CV_WINDOW_NORMAL);
+	cv::imshow("Result Image", res);
+
 }
-
+#endif
