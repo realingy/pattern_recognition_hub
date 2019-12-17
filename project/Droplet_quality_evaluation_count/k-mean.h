@@ -4,6 +4,7 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
-void kmean();
+//void kmean();
+void KMean(cv::Mat& src, cv::Mat& dst);
 
 #endif

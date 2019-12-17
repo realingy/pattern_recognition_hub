@@ -5,25 +5,23 @@
 void GaussianBlur(cv::Mat& src, cv::Mat& dst);
 void do_kmean(cv::Mat src);
 
-void kmean()
+//void kmean(cv::Mat &src, cv::Mat & dst)
+void KMean(cv::Mat &src, cv::Mat & dst)
 {
 	using namespace cv;
-	Mat img = imread("bean.JPG");
-	namedWindow("Source Image", CV_WINDOW_NORMAL);
-	imshow("Source Image", img);
 
 	//生成一维采样点,包括所有图像像素点,注意采样点格式为32bit浮点数。 
-	Mat samples(img.cols * img.rows, 1, CV_32FC3);
+	Mat samples(src.cols * src.rows, 1, CV_32FC3);
 
 	//标记矩阵，32位整形 
-	Mat labels(img.cols * img.rows, 1, CV_32SC1);
+	Mat labels(src.cols * src.rows, 1, CV_32SC1);
 
 	uchar* p;
 	int k = 0;
-	for (int i = 0; i < img.rows; i++)
+	for (int i = 0; i < src.rows; i++)
 	{
-		p = img.ptr<uchar>(i);
-		for (int j = 0; j < img.cols; j++)
+		p = src.ptr<uchar>(i);
+		for (int j = 0; j < src.cols; j++)
 		{
 			samples.at<Vec3f>(k, 0)[0] = float(p[j * 3]);
 			samples.at<Vec3f>(k, 0)[1] = float(p[j * 3 + 1]);
@@ -36,11 +34,11 @@ void kmean()
 	int clusterCount = 2; //区域中心个数
 	Mat centers(clusterCount, 1, samples.type());
 	kmeans(samples, clusterCount, labels,
-		TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 10, 1.0),
-		3, KMEANS_PP_CENTERS, centers);
+			TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 10, 1.0),
+			3, KMEANS_PP_CENTERS, centers);
 
 	// 我们已知有2个聚类(前景和背景)，用不同的灰度层表示。 
-	Mat img1(img.rows, img.cols, CV_8UC1);
+	Mat img1(src.rows, src.cols, CV_8UC1);
 	float step = 255 / (clusterCount - 1);
 	k = 0;
 	for (int i = 0; i < img1.rows; i++)
@@ -51,11 +49,16 @@ void kmean()
 			int tt = labels.at<int>(k, 0);
 			k++;
 			p[j] = 255 - tt * step;
+			if (p[j] != 0)
+			{
+				p[j] = 255;
+			}
 		}
 	}
 
-	namedWindow("K-Means分割效果", CV_WINDOW_NORMAL);
-	imshow("K-Means分割效果", img1);
+	dst = img1;
+	//namedWindow("K-Means分割效果", CV_WINDOW_NORMAL);
+	//imshow("K-Means分割效果", dst);
 }
 
 /*
