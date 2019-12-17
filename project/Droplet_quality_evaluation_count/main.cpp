@@ -1,8 +1,7 @@
 #include "k-mean.h"
 #include "connect_region.h"
-#include <QApplication>
-#include <QLabel>
 
+#if 0
 int main(int argc, char *argv[])
 {
 #if 0
@@ -47,5 +46,6 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
+#endif
 
 
