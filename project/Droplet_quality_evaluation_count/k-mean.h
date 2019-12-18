@@ -49,9 +49,7 @@ private:
 public:
 	KMEANS(int k);
 	void loadDataSet(char* filename);	// 读入数据信息并初始化dataSet以及colLen、rowLen
-	void loadImage(cv::Mat & src);		// 读入图像信息并初始化dataSet以及colLen、rowLen
 	void randCent();					// 随机生成k个中心点
-	void generatCentImage();			// 随机生成k个中心点
 	void print();						// 打印结果
 	void kmeans();						// kmeans的核心函数，计算k个中心点以及每个点的归类
 };
@@ -59,11 +57,12 @@ public:
 class KMeansImage
 {
 private:
-	vector<vector<float>> data_;	// 训练数据（二维矩阵或者图像）
 	vector<float> mmin, mmax;		// 
 	int col_, row_;					// colLen:向量的维数; rowLen:向量数量
 	int K_;							// K值
 	vector<float> centroids;		// K个聚类的中心
+	cv::Mat img_;
+	float cent_max_;
 
 	// 存有最大最小值的结构体
 	typedef struct MinMax
@@ -76,7 +75,7 @@ private:
 	// 每个点所属的聚类以及距离值
 	typedef struct Node
 	{
-		int minIndex; //聚类的index，the index of each node
+		uint minIndex; //聚类的index，the index of each node
 		double minDist; //距离值（最小距离）
 		Node(int idx, double dist) :minIndex(idx), minDist(dist) {}
 	}tNode;
@@ -106,18 +105,33 @@ private:
 
 	// 计算距离
 	float distEclud(float v1, float v2) {
+		float dist = v1 - v2;
 		return abs(v1 - v2);
 	}
 
 public:
 	KMeansImage(int k) {
 		K_ = k;
+		cent_max_ = 0;
 	}
-	void loadImage(cv::Mat& src) {
-		// 读入图像信息并初始化dataSet以及colLen、rowLen
+	void loadImage(cv::Mat& src)
+	{
 		col_ = src.cols;
 		row_ = src.rows;
-		//img_ = src;
+
+		img_.create(cv::Size(col_, row_), CV_32FC1);
+
+		for (size_t i = 0; i < row_; i++)
+		{
+			for (size_t j = 0; j < row_; j++)
+			{
+				img_.at<float>(i, j) = (float)src.at<uchar>(i, j);
+				if((float)src.at<uchar>(i,j) > cent_max_)
+					cent_max_ = (float)src.at<uchar>(i, j);
+			}
+		}
+
+		/*
 		vector<float> temp;
 		for (size_t i = 0; i < row_; i++)
 		{
@@ -128,45 +142,38 @@ public:
 			}
 			data_.push_back(temp);
 		}
+		*/
 	}
+
 	void generatCentroids() {
 		// 生成K个中心点
-		float step = 255 / (K_ - 1);
+		//float step = 255 / (K_ - 1);
+		float step = cent_max_ / (K_ - 1);
 		for (int i = 0; i < K_; i++)
 		{
-			centroids.push_back(step*i);
+			centroids.push_back(step * i);
 		}
 	}
 		
 	// 计算结果
-	//cv::Mat update_result()
-	void update_result()
+	cv::Mat update_result()
 	{
-		//cv::Mat result = cv::Mat(cv::Size(row_, col_), CV_32FC1);
-		//cv::Mat result;
-		for (int i = 0; i < 10; i++)
-		{
-			for (int j = 0; j < 10; j++)
-			{
-				int idx = clusterAssment[i][j].minIndex; // 类别
-				cout << centroids[idx] << "\t";
-			}
-		}
+		cv::Mat result = cv::Mat(cv::Size(col_, row_), CV_32FC1);
 
-		/*
 		for (int i = 0; i < row_; i++)
 		{
 			for (int j = 0; j < col_; j++)
 			{
 				int idx = clusterAssment[i][j].minIndex; // 类别
-				// result.at<float>(i, j) = centroids[idx];
-				// result.at<uchar>(i, j) = (uchar)centroids[idx];
-				cout << centroids[idx];
+				result.at<float>(i, j) = (float)centroids[idx];
+				//if(idx > 0)
+				//	cout << idx << " ";
+				if (centroids[idx] > 0)
+					cout << centroids[idx] << "\t";
 			}
 		}
 
 		return result;
-		*/
 	}
 
 	void kmeans(cv::Mat & src) {
@@ -197,8 +204,8 @@ public:
 					// 计算第向量距离所有聚类中心centroids的距离
 					for (int cent = 0; cent < K_; cent++)
 					{
+						float ccc = centroids[cent];
 						float dist = distEclud(centroids[cent], (float)src.at<uchar>(i, j));
-						//float dist = distEclud(centroids[cent], data_[i][j]);
 						if (dist < minDist)
 						{
 							minDist = dist;
@@ -206,6 +213,9 @@ public:
 						}
 					}
 				
+					//if(minIndex > 0)
+					//	cout << " " << minIndex;
+
 					// 如果聚类中心有所变化
 					if (clusterAssment[i][j].minIndex != minIndex)
 					{
@@ -214,6 +224,17 @@ public:
 						clusterAssment[i][j].minDist = minDist;
 					}
 				}
+			}
+
+			// 分类
+			std::ofstream file3("clusterAssment.txt");
+			for (int i = 0; i < row_; i++)
+			{
+				for (int j = 0; j < col_; j++)
+				{
+					file3 << clusterAssment[i][j].minIndex << "\t";
+				}
+				file3 << std::endl;
 			}
 
 			// step two : update the centroids
@@ -233,7 +254,6 @@ public:
 						{
 							++cnt;
 							total[cent] += (float)src.at<uchar>(i, j);// 0/*灰度值*/;
-							// total[cent] += data_[i][j];// 0/*灰度值*/;
 						}
 					}
 				}

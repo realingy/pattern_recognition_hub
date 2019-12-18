@@ -19,10 +19,10 @@ void KMean(cv::Mat &src, cv::Mat & dst)
 {
 	using namespace cv;
 
-	//生成一维采样点,包括所有图像像素点,注意采样点格式为32bit浮点数。 
+	// 生成一维采样点,包括所有图像像素点,注意采样点格式为32bit浮点数。 
 	Mat samples(src.cols * src.rows, 1, CV_32FC3);
 
-	//标记矩阵，32位整形 
+	// 标记矩阵，32位整形 
 	Mat labels(src.cols * src.rows, 1, CV_32SC1);
 
 	uchar* p;
@@ -39,8 +39,7 @@ void KMean(cv::Mat &src, cv::Mat & dst)
 		}
 	}
 
-	// int clusterCount = 4; //区域中心个数
-	int clusterCount = 2; //区域中心个数
+	int clusterCount = 2; //聚类中心数（类别数量）
 	Mat centers(clusterCount, 1, samples.type());
 	kmeans(samples, clusterCount, labels,
 			TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 10, 1.0),
@@ -55,9 +54,9 @@ void KMean(cv::Mat &src, cv::Mat & dst)
 		p = img1.ptr<uchar>(i);
 		for (int j = 0; j < img1.cols; j++)
 		{
-			int tt = labels.at<int>(k, 0);
+			int cent = labels.at<int>(k, 0);
 			k++;
-			p[j] = 255 - tt * step;
+			p[j] = 255 - cent * step;
 			if (p[j] != 0)
 			{
 				p[j] = 255;
@@ -304,12 +303,6 @@ typename KMEANS<T>::tMinMax KMEANS<T>::getMinMax(int idx)
 }
 
 template<typename T>
-void KMEANS<T>::generatCentImage()
-{
-
-}
-
-template<typename T>
 void KMEANS<T>::randCent()
 {
 	//init centroids
@@ -396,27 +389,6 @@ void KMEANS<T>::print()
 }
 
 template<typename T>
-void KMEANS<T>::loadImage(cv::Mat& src)
-{
-	int cols = src.cols;
-	int rows = src.rows;
-
-	vector<T> temp;
-	for (size_t i = 0; i < rows; i++)
-	{
-		uchar* data = gray.ptr<uchar>(i);
-		temp.clear();
-		for (size_t j = 0; j < cols; j++)
-		{
-			temp.push_back(data[j]);
-		}
-		dataSet.push_back(temp);
-	}
-
-	cout << "data leaded\n";
-}
-
-template<typename T>
 void KMEANS<T>::loadDataSet(char* filename)
 {
 	FILE* pFile;
@@ -442,6 +414,7 @@ void KMEANS<T>::loadDataSet(char* filename)
 	rowLen = dataSet.size();
 }
 
+/*
 #if 0
 int main()
 {
@@ -474,11 +447,15 @@ int main()
 	kms.loadImage(gray);
 	kms.generatCentroids(); // 生成K个中心点
 	kms.kmeans(gray);
-	//cv::Mat res = kms.update_result();
-	kms.update_result();
+	cv::Mat res = kms.update_result();
+	// kms.update_result();
 
-	//cv::namedWindow("Result Image", CV_WINDOW_NORMAL);
-	//cv::imshow("Result Image", res);
+	cv::namedWindow("Result Image", CV_WINDOW_NORMAL);
+	cv::imshow("Result Image", res);
 
+	cv::waitKey(0);
+
+	return 0;
 }
 #endif
+*/

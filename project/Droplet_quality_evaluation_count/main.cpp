@@ -1,16 +1,13 @@
 #include "k-mean.h"
 #include "connect_region.h"
 
-#if 0
+#if 1
 int main(int argc, char *argv[])
 {
 #if 0
 	QApplication app(argc, argv);
-
 	QLabel* label = new QLabel("Hello Qt");
-
 	label->show();
-
 	return app.exec();
 #endif
 
