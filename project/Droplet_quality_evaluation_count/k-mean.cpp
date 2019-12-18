@@ -19,7 +19,7 @@ void KMean(cv::Mat &src, cv::Mat & dst)
 {
 	using namespace cv;
 
-	// 生成一维采样点,包括所有图像像素点,注意采样点格式为32bit浮点数。 
+	// 生成一维采样点,包括所有图像像素点,注意采样点格式为32bit浮点数。(cv::kmeans只接受32bit浮点型Mat数据) 
 	Mat samples(src.cols * src.rows, 1, CV_32FC3);
 
 	// 标记矩阵，32位整形 
