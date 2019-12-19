@@ -19,3 +19,5 @@ target_link_libraries(example_15_01 ${OpenCV_LIBS})
 add_executable(example_15_01_fd example_15_01_帧间差分.cpp)
 target_link_libraries(example_15_01_fd ${OpenCV_LIBS})
 
+add_executable(example_15_02 example_15-02_平均背景法.cpp)
+target_link_libraries(example_15_02 ${OpenCV_LIBS})
